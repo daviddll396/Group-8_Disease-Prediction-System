@@ -16,7 +16,7 @@ import seaborn as sns
  
 
 # Reading the train.csv file by removing the last column since it's an empty column
-DATA_PATH = "dataset/Training.csv"
+DATA_PATH = "dataset/Disease-Prediction-Training.csv"
 data = pd.read_csv(DATA_PATH).dropna(axis = 1)
  
 # Checking whether the dataset is balanced or not 
@@ -95,7 +95,7 @@ cf_matrix = confusion_matrix(y_test, preds)
 plt.figure(figsize=(12,8))
 sns.heatmap(cf_matrix, annot=True)
 plt.title("Confusion Matrix for SVM Classifier on Test Data")
-plt.show()
+# plt.show()
  
  # Training the models on whole data
 final_svm_model = SVC()
@@ -106,13 +106,12 @@ final_nb_model.fit(X, y)
 final_rf_model.fit(X, y)
 
 # Reading the test data
-test_data = pd.read_csv("./dataset/Testing.csv").dropna(axis=1)
+test_data = pd.read_csv("./dataset/Disease-Prediction-Testing.csv").dropna(axis=1)
 
 test_X = test_data.iloc[:, :-1]
 test_Y = encoder.transform(test_data.iloc[:, -1])
 
-# Making prediction by take mode of predictions
-# made by all the classifiers
+# Making prediction by taking mode of predictions made by all the classifiers
 svm_preds = final_svm_model.predict(test_X)
 nb_preds = final_nb_model.predict(test_X)
 rf_preds = final_rf_model.predict(test_X)
@@ -128,13 +127,12 @@ plt.figure(figsize=(12,8))
 
 sns.heatmap(cf_matrix, annot = True)
 plt.title("Confusion Matrix for Combined Model on Test Dataset")
-plt.show()
+# plt.show()
 
 
 symptoms = X.columns.values
 
-# Creating a symptom index dictionary to encode the
-# input symptoms into numerical form
+# Creating a symptom index dictionary to encode the input symptoms into numerical form
 symptom_index = {}
 for index, value in enumerate(symptoms):
 	symptom = " ".join([i.capitalize() for i in value.split("_")])
@@ -205,24 +203,30 @@ def predictDisease(symptoms):
 		index = data_dict["symptom_index"][symptom]
 		input_data[index] = 1
 		
-	# reshaping the input data and converting it
-	# into suitable format for model predictions
+
 	input_data = np.array(input_data).reshape(1,-1)
 	
-	# generating individual outputs
+	# generating individual outputs for predictions
 	rf_prediction = data_dict["predictions_classes"][final_rf_model.predict(input_data)[0]]
+
 	nb_prediction = data_dict["predictions_classes"][final_nb_model.predict(input_data)[0]]
+
 	svm_prediction = data_dict["predictions_classes"][final_svm_model.predict(input_data)[0]]
 	
 	# making final prediction by taking mode of all predictions
 	final_prediction = mode([rf_prediction, nb_prediction, svm_prediction])[0][0]
 	predictions = {
 		"rf_model_prediction": rf_prediction,
-		"naive_bayes_prediction": nb_prediction,
+
 		"svm_model_prediction": nb_prediction,
+
+		"naive_bayes_prediction": nb_prediction,
+		
 		"final_prediction":final_prediction
 	}
 	return predictions
 
-# Testing the function
+
 print(predictDisease("Vomiting,Cough,High Fever"))
+
+print(predictDisease("Itching,Skin Rash"))
